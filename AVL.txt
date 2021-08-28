@@ -1,0 +1,129 @@
+class Node:
+  def __init__(self,d):
+    self.data=d 
+    self.left=None 
+    self.right=None 
+    self.height=1 
+
+class AVL:
+  def getHeight(self,root):
+    if not root:
+      return 0 
+    else:
+      return root.height
+  
+  def getBalance(self,root):
+    if not root:
+      return 0 
+    else:
+      return self.getHeight(root.left)-self.getHeight(root.right)
+  
+  def leftRotate(self,root):
+    rt=root.right
+    temp=rt.left 
+    rt.left=root
+    root.right=temp
+    root.height=1+max(self.getHeight(root.left),self.getHeight(root.right))
+    rt.height=1+max(self.getHeight(rt.left),self.getHeight(rt.right))
+    return rt
+  
+  def rightRotate(self,root):
+    lt=root.left 
+    temp=lt.right 
+    lt.right=root 
+    root.left=temp
+    root.height=1+max(self.getHeight(root.left),self.getHeight(root.right))
+    lt.height=1+max(self.getHeight(lt.left),self.getHeight(lt.right))
+    return lt
+  
+  def successor(self,root):
+    right=root.right 
+    while right.left:
+      right=right.left 
+    return right.data
+  
+  def predecessor(self,root):
+    left=root.left 
+    while left.right:
+      left=left.right 
+    return left.right
+    
+  def insert(self,root,data):
+    if root==None:
+      return Node(data)
+    elif data<=root.data:
+      root.left=self.insert(root.left,data)
+    elif data>root.data:
+      root.right=self.insert(root.right,data)
+    
+    root.height=1+max(self.getHeight(root.left),self.getHeight(root.right))
+    balance=self.getBalance(root)
+    
+    if balance<-1:
+      if data>root.right.data:
+        return self.leftRotate(root)
+      else:
+        root.right=self.rightRotate(root.right)
+        return self.leftRotate(root)
+    elif balance>1:
+      if data<=root.left.data:
+        return self.rightRotate(root)
+      else:
+        root.left=self.leftRotate(root.left)
+        return self.rightRotate(root)
+    
+    return root
+    
+  def delete(self,root,d):
+    if not root:
+      return None
+    elif root.data>d:
+      root.left=self.delete(root.left,d)
+    elif root.data<d:
+      root.right=self.delete(root.right,d)
+    else:
+      if root.left==None and root.right==None:
+        root=None
+        return root 
+      elif root.right:
+        root.data=self.successor(root)
+        root.right=self.delete(root.right,root.data)
+      else:
+        root.data=self.predecessor(root)
+        root.left=self.delete(root.left,root.data)
+        
+    if not root:
+      return None 
+    else:
+      root.height=1+max(self.getHeight(root.left),self.getHeight(root.right))
+      balance=self.getBalance(root)
+      
+      if balance<-1:
+        if self.getBalance(root.right)<=0:
+          return self.leftRotate(root)
+        else:
+          root.right=self.rightRotate(root.right)
+          return self.leftRotate(root)
+      elif balance>1:
+        if self.getBalance(root.left)>=0:
+          return self.rightRotate(root)
+        else:
+          root.left=self.leftRotate(root.left)
+          return self.rightRotate(root)
+    return root
+  
+  def inorder(self,root):
+    if not root:
+      return 
+    self.inorder(root.left)
+    print(root.data)
+    self.inorder(root.right)
+
+arr=[21,26,30,9,4,14,28,18,15,10,2,3,7]
+a=AVL()
+root=None
+for i in arr:
+  root=a.insert(root,i)
+a.delete(root,2)
+a.delete(root,3)
+a.inorder(root)
